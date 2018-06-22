@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import com.google.gson.Gson;
 import com.risk.sense.domain.MessageStorage;
 import com.risk.sense.entity.Job;
 import com.risk.sense.repository.JobRepository;
@@ -22,17 +23,16 @@ public class KafkaConsumer {
 	private JobRepository jobRepository;
 	
 	@KafkaListener(topics="${risksense.kafka.topic}")
-    public void processMessage(String content) {
+    public void processMessage(String content) {		
+		
+		Gson gson = new Gson();
+		
+		Job jobObj = gson.fromJson(content, Job.class);
+		
 		log.info("received content = '{}'", content);
+		
 		storage.put(content);
 		
-		
-		// aCOnvert aBack the aGSON aJob aJSON into aJob aObject
-		Job  j = new Job();
-		j.setKeyword(content);
-			
-		
-		
-		jobRepository.save(j);
+		jobRepository.save(jobObj);
     }
 }
